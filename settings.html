@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google Drive Image Widget Settings</title>
+
+  <!-- build:css css/settings.min.css -->
+  <link rel="stylesheet" href="components/common-style/dist/css/rise.min.css">
+  <link rel="stylesheet" href="components/rv-bootstrap-formhelpers/dist/css/rv-bootstrap-formhelpers.min.css">
+  <link rel="stylesheet" href="components/bootstrap-select/bootstrap-select.min.css">
+  <!-- endbuild -->
+
+  <style>
+    html, body {
+      background-color: transparent;
+    }
+
+    body {
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    .popover{
+
+    max-width:1000px !important;
+    position:fixed;
+}
+    /*#bars:hover {
+      border: 1px solid red;
+    }*/
+  </style>
+</head>
+<body ng-app="risevision.widget.google.drive.image.settings" ng-controller="settingsController">
+  <div class="widget">
+    <div class="overlay"></div>
+    <div class="settings">
+      <div class="settings-center">
+        <div class="wrapper container modal-content" id="outer" ng-controller="googleDriveImageSettingsController">
+          <div class="modal-header">
+            <h2 id="settings-title"> Google Drive Image Widget Settings
+              <button type="button" ng-click="closeSettings()" class="close">
+                <span>&times;</span>
+                <span class="sr-only">Close</span>
+              </button>
+            </h2>
+            <div class="sticky-wrapper">
+              <widget-button-toolbar save="saveSettings()" cancel="closeSettings()">
+              </widget-button-toolbar>
+            </div>
+          </div>
+          <div id="settings-alert" class="alert alert-danger" ng-show="onError"></div>
+          <form class="form-horizontal" role="form">
+            <div class="section"><h5>Settings&nbsp<i class="fa fa-cog"></i></h5>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="folder-upload">Select Folder :</label>
+              <div class="col-sm-2">
+                <button class="btn btn-google-drive" ng-click="getId()" id="folder-upload"></button>
+              </div>
+            </div>
+            <div class="form-group" hidden="true" id="well-resp">
+              <div class="col-sm-12">
+                <div class="well" id="notice">
+                  <p><h5 id="title"></h5></p>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="transition-time">Delay :</label>
+              <div class="col-sm-2">
+                <div class="input-group">
+                  <input type="number" min="2" class="form-control" ng-model="settings.additionalParams.delay" id="transition-time">
+                  <div class="input-group-addon">sec</div><i id="delaynote"></i>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="controls">Show controls :</label>
+              <label class="col-sm-1 control-label"><input type="radio" name="show-controls" value="true" ng-model="settings.additionalParams.showControls">&nbspYes</label>
+              <label class="col-sm-1 control-label"><input type="radio" name="show-controls" value="false" ng-model="settings.additionalParams.showControls" checked>&nbspNo</label>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="transitions-select">Transition Effect :</label>
+              <label class="col-sm-3 control-label" style="margin-left: -3%">Select Transitions Effects</label>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-12">
+                <div class="well">
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <label style="display:block;" ng-repeat="effect in transitionEffects" ng-if="$index<7">
+                        <input type="checkbox" name="selectedTransitions[]" ng-click="toggleSelection(effect)" ng-checked="selection.indexOf(effect)>-1" value="{{effect}}">
+                        {{effect|capitalize|nspace}}&nbsp&nbsp<i data-toggle="popover" id="{{effect}}" class="fa fa-question-circle" onmouseover="getId(this);"></i>
+                      </label>
+                    </div>
+                    <div class="col-sm-6">
+                      <label style="display:block;" ng-repeat="effect in transitionEffects" ng-if="$index>6">
+                        <input type="checkbox" name="selectedTransitions[]" ng-click="toggleSelection(effect)" ng-checked="selection.indexOf(effect)>-1" value="{{effect}}">
+                        {{effect|capitalize|nspace}}&nbsp&nbsp<i id="{{effect}}" data-toggle="popover" class="fa fa-question-circle" onmouseover="getId(this);"></i>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="row" style="margin-top: 20px;">
+                    <div class="col-sm-6">
+                      <button class="btn btn-info" style="border-radius:5px;" ng-click="checkAll()">Check All</button>
+                    </div>
+                    <div class="col-sm-6">
+                      <button class="btn btn-info" style="border-radius:5px;" ng-click="uncheckAll()">Uncheck All</button>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular.min.js"></script>
+  <script type="text/javascript">
+    // $(function() {
+    //   window.startTrans = new flux.slider("#img-container",{
+    //     autoplay: true,
+    //     pagination: false,
+    //     delay: 4000,
+    //     transitions: selection
+    //   });
+    // });
+
+    var elId = [];
+
+    function getId(obj) {
+      elId[0] = obj.id;
+    }
+
+    $(document).ready(function(){
+      $('.fa-question-circle').popover({
+        placement : 'right',
+		trigger : 'hover',
+        html : true,
+        content : '<div id="mediax"><img src="images/imgph1.jpg"><img src="images/imgph2.jpg"></div>'
+      });
+      $('.fa-question-circle').hover(function() {
+        window.startTrans = new flux.slider("#mediax",{
+          autoplay: true,
+          pagination: false,
+          delay: 2500,
+          transitions : [elId]
+        });
+      });
+
+      // (function() {
+      //   window.startTrans = new flux.slider("#mediax",{
+      //     autoplay: true,
+      //     pagination: false,
+      //     delay: 2500,
+      //     transitions : [elId]
+      //   });
+      // })();
+
+
+
+
+    });
+
+  </script>
+
+
+  <!-- build:js js/settings.min.js -->
+  <script src="components/angular-translate/angular-translate.js"></script>
+  <script src="components/angular-translate-loader-static-files/angular-translate-loader-static-files.js"></script>
+  <script src="components/rv-common-i18n/dist/i18n.js"></script>
+  <script src="components/bootstrap-sass-official/assets/javascripts/bootstrap.js"></script>
+  <script src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+  <script src="components/rv-bootstrap-formhelpers/dist/js/rv-bootstrap-formhelpers.js"></script>
+  <script src="components/bootstrap-select/bootstrap-select.min.js"></script>
+  <script src="components/widget-settings-ui-core/dist/widget-settings-ui-core.js"></script>
+  <script src="components/widget-settings-ui-components/dist/js/widget-settings-ui-components.js"></script>
+  <script src="components/widget-settings-ui-components/dist/js/angular/widget-button-toolbar.js"></script>
+  <script src="components/widget-common/dist/common.js"></script>
+  <script src="config/config.js"></script>
+  <script src="settings/settings-app.js"></script>
+  <script src="settings/ctr-gdrive-image-settings.js"></script>
+  <script src="widget/imgph.js"></script>
+  <!-- endbuild -->
+  <script type="text/javascript" src="settings/settings-main.js"></script>
+  <script src="https://apis.google.com/js/client.js?onload=init"></script>
+
+
+  <!-- build:e2egadgets -->
+  <script src="//rvashow2.appspot.com/gadgets/gadgets.min.js"></script>
+  <!-- endbuild -->
+</body>
+</html>

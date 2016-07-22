@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Text Widget</title>
+
+    <!-- build:css css/widget.min.css -->
+    <link rel="stylesheet" href="components/common-style/dist/css/alignment.min.css">
+    <link rel="stylesheet" href="components/bootstrap-form-components/dist/css/all.min.css">
+    <!-- endbuild -->
+
+    <style>
+      body {
+        margin: 0;
+        font-size: 40px;
+      }
+
+      .loader {
+  	    position: fixed;
+  	    left: 0px;
+  	    top: 0px;
+  	    width: 100%;
+  	    height: 100%;
+  	    z-index: 9999;
+  	    background: url('images/ajax-loader.gif') 50% 50% no-repeat rgb(249,249,249);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loader"></div>
+    <div id="container">
+      <!-- <div class="loader"></div> -->
+		<!--Build your widget in here, and it will show up inside your widget boundary-->
+		<!-- <h2 id="message"></h2> -->
+      <div id="img-container">
+      </div>
+    </div>
+
+    <script src="//rvashow2.appspot.com/gadgets/gadgets.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $(window).load(function() {
+	       $(".loader").fadeOut("slow");
+       });
+    </script>
+
+    <!-- build:js js/widget.min.js -->
+    <script src="components/widget-common/dist/common.js"></script>
+    <script src="widget/gdrive-img.js"></script>
+    <script src="widget/main.js"></script>
+    <script src="widget/imgph.js"></script>
+    <!-- endbuild -->
+  </body>
+</html>
